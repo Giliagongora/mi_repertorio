@@ -2,6 +2,7 @@
 const express = require("express");
 const app = express();
 const port = 3000;
+const path = require("path");
 
 const {
   agregar,
@@ -15,7 +16,11 @@ app.use(express.json()); // Le dice a tu aplicación Express cómo entender los 
 app.use(express.urlencoded({ extended: true })); // Le dice a tu aplicación Express cómo entender los datos que llegan de formularios HTML. Cuando un formulario se envía desde un navegador al servidor, los datos se envían en este formato. Este middleware ayuda a tu aplicación a comprender y manejar esos datos fácilmente.
 
 app.get("/", (req, res) => {
-  res.sendFile(__dirname + "/index.html");
+  // Obtener la ruta completa del archivo index.html
+  const indexPath = path.join(__dirname, "index.html");
+  
+  // Enviar el archivo index.html como respuesta
+  res.sendFile(indexPath);
 });
 
 // Ruta para agregar una canción a la tabla de canciones
@@ -35,6 +40,8 @@ app.get("/canciones", async (req, res) => {
   try {
     const result = await canciones();
     res.json(result);
+    console.log(` ${JSON.stringify(result.rows)}`);
+    return result.rows;
     
   } catch (error) {
     console.log(error);
@@ -46,7 +53,10 @@ app.delete("/cancion", async (req, res) => {
     const { id } = req.query;
     const result = await eliminar(id); // Extrae el parámetro "id" de la consulta (query) de la solicitud. En este caso, se espera que el ID de la canción se envíe como parte de la URL de la solicitud DELETE
     res.json(result);
-  } catch (error) {}
+  } catch (error) {
+    console.error("Error al eliminar la canción:", error);
+    return res.status(500).json({ error: "Error interno del servidor" });
+  }
 });
 
 app.put("/cancion/:id", async (req, res) => {
@@ -68,3 +78,5 @@ app.listen(port, () => console.log(`Servidor escuchado en puerto ${port}`));
 // app.get("*", (req, res) => {
 //     res.send("Acá no tenemos nada, prueba en otro lado");
 // })
+
+
